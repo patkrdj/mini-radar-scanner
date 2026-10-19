@@ -1,0 +1,13 @@
+# CubeIDE workspace metadata (personal settings)
+.metadata/
+
+# Build outputs (regenerated on every build)
+Debug/
+Release/
+
+# IDE-local settings and launch configs (contain local paths / probe serial)
+.settings/
+*.launch
+
+# CubeMX backups
+*.bak

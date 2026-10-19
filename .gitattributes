@@ -1,0 +1,7 @@
+# Normalize line endings: LF in repo, native on checkout
+* text=auto
+
+# Files that must stay LF even on Windows (run on Linux / Pi)
+*.sh      text eol=lf
+Makefile  text eol=lf
+Kbuild    text eol=lf
