@@ -33,7 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define HEARTBEAT_PERIOD_MS	(1000U)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -44,7 +44,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+static volatile uint32_t g_b1_edge_count = 0U;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -96,19 +96,33 @@ int main(void)
   /* USER CODE BEGIN 2 */
   setvbuf(stdout, NULL, _IONBF, 0);
   printf("\r\nHello, NUCLEO-F446RE! SYSCLK = %lu Hz\r\n", HAL_RCC_GetSysClockFreq());
-  uint32_t loop_count = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint32_t last_edge_count		= 0U;
+  uint32_t last_heartbeat_ms	= HAL_GetTick();
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-    printf("tick %lu, uptime_ms = %lu\r\n", loop_count++, HAL_GetTick());
-    HAL_Delay(500U);
+    const uint32_t edge_count = g_b1_edge_count;
+    if (edge_count != last_edge_count)
+    {
+    	printf("B1 edges total=%lu (+%lu)\r\n",
+    			(unsigned long)edge_count,
+				(unsigned long)(edge_count - last_edge_count));
+    	last_edge_count = edge_count;
+    	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    }
+
+    const uint32_t now_ms = HAL_GetTick();
+    if ((now_ms - last_heartbeat_ms) >= HEARTBEAT_PERIOD_MS)
+    {
+    	last_heartbeat_ms = now_ms;
+    	printf("tick %lu ms\r\n", (unsigned long)now_ms);
+    }
   }
   /* USER CODE END 3 */
 }
@@ -161,7 +175,13 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == B1_Pin)
+	{
+		g_b1_edge_count++;
+	}
+}
 /* USER CODE END 4 */
 
 /**
